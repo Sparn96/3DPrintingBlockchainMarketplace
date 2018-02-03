@@ -18,7 +18,8 @@ namespace _3DPrintingBlockchainMarket.Models
             EnterpriseVerifiedByUser = new HashSet<Enterprise>();
 
         }
-
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
 
         public IReadOnlyCollection<ObjectModel> ObjectModelCreatedBy { get; set; }
         public IReadOnlyCollection<ObjectModel> ObjectModelLastModBy { get; set; }

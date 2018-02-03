@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using _3DPrintingBlockchainMarket.Models;
+using _3DPrintingBlockchainMarket.Models.AccountViewModels;
+using _3DPrintingBlockchainMarket.Models.Json;
 
 namespace _3DPrintingBlockchainMarket.Controllers
 {
@@ -12,7 +14,16 @@ namespace _3DPrintingBlockchainMarket.Controllers
     {
         public JsonResult Index()
         {
-            return Json(new { page = "Home", result = "Success" });
+            UploadModelJson model = new UploadModelJson()
+            {
+                description = "description",
+                model_license_id = "1232-GDEGE43FE43-Ff-vw2gf2...",
+                name = "My Model",
+                pricing_unit_of_measure_id = "USD",
+                tags = new List<string>() { "Green", "Round", "Bouncy" },
+                token_price = 0
+            };
+            return Json(model);
         }
 
         public JsonResult About()
