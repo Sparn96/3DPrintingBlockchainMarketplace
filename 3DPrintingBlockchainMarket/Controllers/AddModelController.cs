@@ -233,11 +233,33 @@ namespace _3DPrintingBlockchainMarket.Controllers
 
         public FileUploadType FindFileType(Stream fileStream, string FileNameWithExtension)
         {
-            //Validate the proper file extention
-            //validate leading and trailing bits.
-            //validate file size.
-            //validate vector patterns
-            return FileUploadType.UNKOWN;
+            string ext = FileNameWithExtension.Remove(0, FileNameWithExtension.Length - 3).ToUpper();
+            switch(ext)
+            {
+                case "PNG":
+                    {
+                        //Validate the proper file extention
+                        //validate leading and trailing bits.
+                        return FileUploadType.PNG;
+                    }
+                case "JPG":
+                    {
+                        //Validate the proper file extention
+                        //validate leading and trailing bits.
+                        return FileUploadType.JPG;
+                    }
+                case "STL":
+                    {
+                        //Validate the proper file extention
+                        //validate leading and trailing bits.
+                        //validate file size.
+                        //validate vector patterns
+                        return FileUploadType.STL;
+                    }
+                default: return FileUploadType.UNKOWN;
+            }
+           
+
         }
     }
 }
