@@ -5,6 +5,11 @@
     <UserSecretsId>aspnet-_3DPrintingBlockchainMarket-AF75A91F-3415-47F1-BFEF-D94B8CB94ED7</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Data\Migrations\20180203121727_initalmigration.cs" />
+    <Compile Remove="Data\Migrations\20180203121727_initalmigration.Designer.cs" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />

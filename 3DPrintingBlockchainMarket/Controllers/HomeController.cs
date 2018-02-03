@@ -10,28 +10,24 @@ namespace _3DPrintingBlockchainMarket.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public JsonResult Index()
         {
-            return View();
+            return Json(new { page = "Home", result = "Success" });
         }
 
-        public IActionResult About()
+        public JsonResult About()
         {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
+            return Json(new { page = "About", result = "Success" });
         }
 
-        public IActionResult Contact()
+        public JsonResult Contact()
         {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            return Json(new { page = "Contact", result = "Success" });
         }
 
-        public IActionResult Error()
+        public JsonResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return Json(new { page = "Error", result = "Failure" });
         }
     }
 }
