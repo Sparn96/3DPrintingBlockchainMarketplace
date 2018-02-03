@@ -28,8 +28,11 @@ namespace _3DPrintingBlockchainMarket.Services
         public string LastModifiedById { get; set; }
     }
 
-    public interface IBasicService<T> // Use Global claims principal for the System?
+    public interface IBasicService<T> // Use Global claims principal for the System? 
     {
+        T Get(params object[] Primary_Keys);
+        IEnumerable<T> GetAll<T>() where T : DataRow;
+
         T Add<T>(T add, ClaimsPrincipal User, bool save_on_complete = true) where T : UserEditableDataRow;
         T Add<T>(T add, bool save_on_complete = true) where T : DataRow;
 
@@ -105,6 +108,20 @@ namespace _3DPrintingBlockchainMarket.Services
             var ent = _context.Update(delete);
             if (save_on_complete) SaveChanges();
             return ent.Entity;
+        }
+
+        public T Get(params object[] Primary_Keys)
+        {
+             return (T)_context.Find(typeof(T), Primary_Keys);
+        }
+
+        public IEnumerable<T> GetAll<T>() where T : DataRow
+        {
+            return _context.Set<T>();
+        }
+        public IEnumerable<T> GetAllActive<T>() where T : DataRow
+        {
+            return _context.Set<T>().Where(f => f.IsActive);
         }
 
         /// <summary>

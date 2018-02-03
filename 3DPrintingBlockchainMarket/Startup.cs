@@ -33,8 +33,12 @@ namespace _3DPrintingBlockchainMarket
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+
+            services.Configure<AuthMessageSenderOptions>(Configuration);
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
+
+            services.AddScoped<IObjectModelService, ObjectModelService>();
 
             services.AddMvc();
         }
