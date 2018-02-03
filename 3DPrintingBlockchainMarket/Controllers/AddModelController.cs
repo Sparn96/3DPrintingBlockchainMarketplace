@@ -1,4 +1,5 @@
 ﻿using _3DPrintingBlockchainMarket.Models;
+using _3DPrintingBlockchainMarket.Models.EmailViewModels;
 using _3DPrintingBlockchainMarket.Models.Json;
 using _3DPrintingBlockchainMarket.Services;
 using Microsoft.AspNetCore.Http;
@@ -15,11 +16,16 @@ namespace _3DPrintingBlockchainMarket.Controllers
 {
     public class AddModelController : Controller
     {
+        public enum FileUploadType {UNKOWN, STL, PNG, JPG }
         private IObjectModelService _ObjectModelService { get; }
+        private IEmailSender _EmailSender { get; }
         private UserManager<ApplicationUser> _UserManager { get; }
-        public AddModelController(IObjectModelService iobs, UserManager<ApplicationUser> um)
+        public AddModelController(IObjectModelService iobs,
+            UserManager<ApplicationUser> um,
+            IEmailSender ies)
         {
             _UserManager = um;
+            _EmailSender = ies;
             _ObjectModelService = iobs;
         }
 
@@ -31,6 +37,7 @@ namespace _3DPrintingBlockchainMarket.Controllers
         /// <returns></returns>
         public async Task<JsonResult> UploadModelsAsync(List<IFormFile> files)
         {
+
             long size = files.Sum(f => f.Length);
             // full path to file in temp location
             var filePath = Path.GetTempFileName();
@@ -45,59 +52,152 @@ namespace _3DPrintingBlockchainMarket.Controllers
                     }
                 }
             }
+            // process uploaded files
             List<string> FailedFiles = new List<string>();
-            foreach(var file in Directory.GetFiles(filePath))
+            //List of all added objects
+            List<string> AddedModelPics = new List<string>();
+            foreach (var file in Directory.GetFiles(filePath))
             {
                 //Remove the filepath
-                string FileName = file.Remove(0, file.LastIndexOf('/'));
+                string FileNameWithExt = file.Remove(0, file.LastIndexOf('/'));
                 //remove the file extension 
-                FileName = FileName.Remove(FileName.Length - 4);
+                string FileName = FileNameWithExt.Remove(FileNameWithExt.Length - 4);
                 using (var stream = new FileStream(file, FileMode.Open))
                 {
                     MemoryStream ValidateStream = new MemoryStream();
                     stream.CopyTo(ValidateStream);
                     stream.Position = 0; // Reset the position for reading
 
-                    if (VerifyValid3DModel(ValidateStream))
+                    switch (FindFileType(ValidateStream, FileNameWithExt))
                     {
-                        //Add object to the database
-                        ObjectModel obj = _ObjectModelService.Get(FileName);
-                        if (obj == null) FailedFiles.Add(FileName);
-                        else
-                        { // The file is a valid object.. verify the proper user is uploading the file
-                            if (_UserManager.GetUserId(User) == obj.CreatedById)
+                        case FileUploadType.STL:
                             {
-                                //user is auth to upload the files or make changes
-                                SHA256Managed sha = new SHA256Managed();
-                                byte[] hash = sha.ComputeHash(stream);
-                                obj.ObjectHash = BitConverter.ToString(hash).Replace("-", String.Empty);
-                                //obj.StoredFileLocation = 
-
-
+                                if (!Add3DModelToFile(stream, FileName)) { FailedFiles.Add(FileName); }
+                                break;
                             }
-                            else
+                        case FileUploadType.PNG:
+                        case FileUploadType.JPG:
                             {
-                                //User is not authorized to make this upload ;; End entire transaction
-                                JsonResult result = Json(new { result = "Failure", reason = "User is unathorized to make changes to this Object" });
-                                result.StatusCode = 401;
-                                return result;
+                                string pic = AddPictureRepresentation(stream, FileName);
+                                if(String.IsNullOrEmpty(pic)){ AddedModelPics.Add(pic); } else{ FailedFiles.Add(FileName); }
+                                break;
                             }
-                        }
-                    }
-                    else
-                    {
-                        //Add to failed message list.. use specific model id?
-                        FailedFiles.Add(FileName);
-                        continue;
+                        default:
+                            {
+                                FailedFiles.Add(FileName);
+                                continue;
+                            }
                     }
                 }
             }
-            // process uploaded files
-            // Don't rely on or trust the FileName property without validation.
+            UploadModelJsonResponse response = new UploadModelJsonResponse()
+            {
+                failed_files = new List<string>()
+            };
+            //Gather the confirmed file picture form the database, send that in an email
+            if (AddedModelPics.Count > 0)
+            {
+                response.success = true;
+                ApplicationUser user = await _UserManager.GetUserAsync(User);
+                UploadModelConfirmation emailModel = new UploadModelConfirmation()
+                {
+                    FirstName = user.FirstName,
+                    ImageUrls = new List<string>()
+                };
+                foreach (var pic_file_loc in AddedModelPics)
+                {
+                    //Load the picture as an absolute url
+                    emailModel.ImageUrls.Add(Url.Content(pic_file_loc));
+                   
+                }
+                await _EmailSender.SendModelConfirmationAsync(user, emailModel);
+            }
+            
+            //If there are any error files,  Review them and send response. 
+            if(FailedFiles.Count > 0)
+            {
+                foreach(var error_file_name in FailedFiles)
+                {
+                    //Add to reuslt Json Object error list
+                    response.failed_files.Add(error_file_name);
+                }
+            }
 
-            return Json(new { result = "Success", message = $"We received {files.Count} File{((files.Count > 0) ? "s" : "")}"});
+
+            return Json(response);
         }
 
+        /// <summary>
+        /// Save .STL files to File System
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="FileName"></param>
+        /// <param name=""></param>
+        /// <returns>Filepath to image</returns>
+        private bool Add3DModelToFile(Stream stream, string FileName)
+        {
+
+            //Add object to the database
+            ObjectModel obj = _ObjectModelService.Get(FileName);
+            if (obj == null) return false;
+            else
+            { // The file is a valid object.. verify the proper user is uploading the file
+                if (_UserManager.GetUserId(User) == obj.CreatedById)
+                {
+                    //user is auth to upload the files or make changes
+                    SHA256Managed sha = new SHA256Managed();
+                    byte[] hash = sha.ComputeHash(stream);
+                    obj.ObjectHash = BitConverter.ToString(hash).Replace("-", String.Empty);
+                    //Verify the File Path Exists
+                    if (!Directory.Exists("UploadedModles"))
+                    {
+                        Directory.CreateDirectory("UploadedModles");
+                    }
+                    if (!Directory.Exists(Path.Combine("UploadedModles", "User")))
+                    {
+                        Directory.CreateDirectory(Path.Combine("UploadedModles", "User"));
+                    }
+                    if (!Directory.Exists(Path.Combine("UploadedModles", "Enterprise")))
+                    {
+                        Directory.CreateDirectory(Path.Combine("UploadedModles", "Enterprise"));
+                    }
+
+                    ///FOR NOW -- JUST STORE IN USER DATA -- FIGURTE OUT FILE SYSTEM LATER 
+                    //Check if Already Exists
+                    string ModelFile = Path.Combine("UploadedModles", "User", FileName + ".stl");
+                    MemoryStream tobeWritten = new MemoryStream();
+                    stream.CopyTo(tobeWritten);
+
+                    if (System.IO.File.Exists(ModelFile))
+                    {
+                        //If the file exists, then it is counted as an update, and the old file must be purged >:)
+                        //Deleye the old file if it exists
+                        System.IO.File.Delete(ModelFile);
+                    }
+                    // write the file to the file system
+                    try { System.IO.File.WriteAllBytes(ModelFile, tobeWritten.ToArray()); } catch (Exception ex) { return false; }
+
+                    //If we got this far, save the ObjectModel 
+                    _ObjectModelService.Update(obj, User);
+
+                    return true;
+
+                }
+                else
+                {
+                    //User is not authorized to make this upload ;; End entire transaction
+                    return false;
+                }
+            }
+        }
+        private string AddPictureRepresentation(Stream stream, string FileName)
+        {
+            string FilePath = Path.Combine("wwwroot", "images", "ObjectImages", FileName + ".png");
+            MemoryStream inMem = new MemoryStream();
+            stream.CopyTo(inMem);
+            System.IO.File.WriteAllBytes(FilePath, inMem.ToArray());
+            return FilePath;
+        }
         public JsonResult ConfirmValidModel(UploadModelJson model)
         {
             if(String.IsNullOrEmpty(model.model_license_id)||
@@ -131,13 +231,13 @@ namespace _3DPrintingBlockchainMarket.Controllers
             }
         }
 
-        public bool VerifyValid3DModel(Stream fileStream)
+        public FileUploadType FindFileType(Stream fileStream, string FileNameWithExtension)
         {
             //Validate the proper file extention
             //validate leading and trailing bits.
             //validate file size.
             //validate vector patterns
-            return true;
+            return FileUploadType.UNKOWN;
         }
     }
 }

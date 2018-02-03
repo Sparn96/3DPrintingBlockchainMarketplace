@@ -1,4 +1,5 @@
 ﻿using _3DPrintingBlockchainMarket.Models;
+using _3DPrintingBlockchainMarket.Models.EmailViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,6 @@ namespace _3DPrintingBlockchainMarket.Services
     {
         Task SendEmailAsync(string email, string subject, string message);
         Task SendConfirmationEmailAsync(ApplicationUser user, string callback_url);
-        Task SendModelConfirmationAsync(string email);
+        Task SendModelConfirmationAsync(ApplicationUser user, UploadModelConfirmation model);
     }
 }

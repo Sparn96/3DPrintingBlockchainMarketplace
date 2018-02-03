@@ -8,5 +8,6 @@ namespace _3DPrintingBlockchainMarket.Models.EmailViewModels
     public class UploadModelConfirmation
     {
         public string FirstName { get; set; }
+        public List<string> ImageUrls { get; set; }
     }
 }

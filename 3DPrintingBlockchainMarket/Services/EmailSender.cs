@@ -64,7 +64,7 @@ namespace _3DPrintingBlockchainMarket.Services
             return Execute(Options.SendGridKey, "Confirm Your Account", result, user.Email);
         }
 
-        public Task SendModelConfirmationAsync(string email)
+        public Task SendModelConfirmationAsync(ApplicationUser user, UploadModelConfirmation model)
         {
             var engine = new RazorLightEngineBuilder()
               .UseMemoryCachingProvider()
@@ -73,9 +73,9 @@ namespace _3DPrintingBlockchainMarket.Services
 
             string template = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "wwwroot", "Templates", "Emails", "Model", "ModelConfirmation.cshtml"));
 
-            string result = engine.CompileRenderAsync("Confirmation", template, typeof(string)).Result;
+            string result = engine.CompileRenderAsync("Confirmation", template, model).Result;
 
-            return Execute(Options.SendGridKey, "Confirm Your Account", result, email);
+            return Execute(Options.SendGridKey, "Congrats On Your Upload!", result, user.Email);
         }
     }
     public class AuthMessageSenderOptions

@@ -12,6 +12,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="7.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.2" PrivateAssets="All" />
@@ -26,7 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="UploadedModles\Enterprise\" />
+    <Folder Include="UploadedModles\User\" />
     <Folder Include="Views\" />
+    <Folder Include="wwwroot\images\ObjectImages\" />
   </ItemGroup>
 
 </Project>
