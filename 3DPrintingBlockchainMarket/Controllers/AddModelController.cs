@@ -84,7 +84,7 @@ namespace _3DPrintingBlockchainMarket.Controllers
                         case FileUploadType.PNG:
                         case FileUploadType.JPG:
                             {
-                                string pic = AddPictureRepresentation(stream, FileName);
+                                string pic = AddPictureRepresentation(stream, FileName) + ".png";
                                 if(!String.IsNullOrEmpty(pic)){ AddedModelPics.Add(pic); } else{ FailedFiles.Add(FileName); }
                                 break;
                             }
@@ -198,11 +198,11 @@ namespace _3DPrintingBlockchainMarket.Controllers
         }
         private string AddPictureRepresentation(Stream stream, string FileName)
         {
-            string FilePath = Path.Combine("wwwroot", "images", "ObjectImages", FileName + ".png");
+            string FilePath = Path.Combine("wwwroot","images", "ObjectImages", FileName + ".png");
             MemoryStream inMem = new MemoryStream();
             stream.CopyTo(inMem);
             System.IO.File.WriteAllBytes(FilePath, inMem.ToArray());
-            return FilePath;
+            return FileName;
         }
         public JsonResult ConfirmValidModel([FromBody]UploadModelJson model)
         {
@@ -230,9 +230,9 @@ namespace _3DPrintingBlockchainMarket.Controllers
                 {
                     objectModel.ObjectTags += tag + ";";
                 }
-
-                try { _ObjectModelService.Add(objectModel, User); } catch { return Json(new { result = "Failure", reason = "Database Save Issue." }); }
-                return Json(new { result = "Success" });
+                ObjectModel mod = null;
+                try { mod = _ObjectModelService.Add(objectModel, User); } catch { return Json(new { result = "Failure", reason = "Database Save Issue." }); }
+                return Json(new { result = "Success", file_id = mod.IdObjectModel });
                 
             }
         }

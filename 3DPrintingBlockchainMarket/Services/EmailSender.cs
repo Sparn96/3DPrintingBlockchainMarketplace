@@ -29,13 +29,14 @@ namespace _3DPrintingBlockchainMarket.Services
             return Execute(Options.SendGridKey, subject, message, email);
         }
 
-        public async Task Execute(string apiKey, string subject, string message, string email)
+        public async Task Execute(string apiKey, string subject, string message, string email, List<Attachment> attachments = null)
         {
             var client = new SendGridClient(apiKey);
             var msg = new SendGridMessage()
             {
                 From = new EmailAddress("noreply@3dobj.com", "3D Obj"),
                 Subject = subject,
+                Attachments = attachments,
                 HtmlContent = message
             };
             msg.AddTo(new EmailAddress(email));
@@ -75,7 +76,27 @@ namespace _3DPrintingBlockchainMarket.Services
 
             string result = engine.CompileRenderAsync("Confirmation", template, model).Result;
 
-            return Execute(Options.SendGridKey, "Congrats On Your Upload!", result, user.Email);
+            List<Attachment> ATT = new List<Attachment>();
+            foreach(var imglnk in model.ImageUrls)
+            {
+                string base64String = string.Empty;
+                // Convert Image to Base64
+                using (FileStream image = new FileStream(Path.Combine("wwwroot", "images", "ObjectImages", imglnk), FileMode.Open))
+                {
+                    MemoryStream ms = new MemoryStream();
+                    image.CopyTo(ms);
+                    Attachment a = new Attachment();
+                    a.Content = Convert.ToBase64String(ms.ToArray());
+                    a.ContentId = imglnk;
+                    a.Filename = imglnk;
+                    a.Type = "image/jpeg";
+                    ATT.Add(a);
+                }
+                    
+            }
+            
+
+            return Execute(Options.SendGridKey, "Congrats On Your Upload!", result, user.Email, ATT);
         }
     }
     public class AuthMessageSenderOptions

@@ -17,39 +17,28 @@ namespace _3DPrintingBlockchainMarket.Controllers
 
         }
         [HttpGet]
-        public JsonResult AuthenticatePrintToken(Guid consumable_license, string user_id)
+        public IActionResult AuthenticatePrintToken(Guid consumable_license, string user_id)
         {
             //Need code that checks consumable_license with the database of tokens to see if valid
             //If valid, cross reference consumable_license to see if matched with correct user_id
             //Currently code makes a random token that is assumed valid
 
 
-           try
-            {
-                Guid singleUseAuthToken = new Guid();
+            ///HAND SHAKE PROCESS
 
-                return Json(singleUseAuthToken);
-            }
-
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-
-
-            throw new NotImplementedException();
+            return RedirectToAction("WriteTransaction", "Transaction", new { objectModel_id = consumable_license, User_id = user_id });
             //Generte a new token and send it back for the printer to send once it is ready to print
         }
         [HttpGet]
         public JsonResult AuthenticatedAndReadyToPrintRequest(Guid auth_token_id)
         {
 
-            
+
             try
             {
-                
 
-               
+
+
             }
 
             catch (Exception e)
