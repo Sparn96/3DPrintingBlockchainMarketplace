@@ -115,6 +115,11 @@ namespace _3DPrintingBlockchainMarket.Data
                     .WithMany(e => e.DistributedLicenses)
                     .HasForeignKey(e => e.ModelLicenseId);
 
+                entity.HasOne(e => e.ObjectModel)
+                    .WithMany(e => e.ConsumableLicenses)
+                    .HasForeignKey(e => e.ObjectModelId)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
+
                 entity.HasOne(e => e.CreatedBy)
                     .WithMany(e => e.ConsumableLicensesCreatedBy)
                     .HasForeignKey(e => e.CreatedById);
@@ -138,6 +143,11 @@ namespace _3DPrintingBlockchainMarket.Data
                 entity.HasOne(e => e.AuthUser)
                     .WithMany(e => e.AuthorizationTokens)
                     .HasForeignKey(e => e.AuthUserId);
+
+                entity.HasOne(e => e.ConsumableLicense)
+                    .WithMany(e => e.AuthorizationTokens)
+                    .HasForeignKey(e => e.ConsumableLicenseId)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
 
                 entity.HasOne(e => e.CreatedBy)
                     .WithMany(e => e.AuthorizationTokenCreatedBy)

@@ -19,6 +19,9 @@ namespace _3DPrintingBlockchainMarket.Models
         public ApplicationUser AuthUser { get; set; }
         public string AuthUserId { get; set; }
 
+        public ConsumableLicense ConsumableLicense { get; set; }
+        public Guid ConsumableLicenseId { get; set; }
+
         public ObjectModel ObjectModel { get; set; }
         public Guid ObjectModeId { get; set; }
     }

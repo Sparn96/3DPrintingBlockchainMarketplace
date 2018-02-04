@@ -38,7 +38,31 @@ namespace _3DPrintingBlockchainMarket.Services
 
         public bool ConsumeUse(Guid token_user)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var con = _context.ConsumableLicense.FirstOrDefault(f => f.IdConsumableLicense == token_user);
+                
+                if (con.NumberOfUses == 0)
+                {
+                    con.IsDeleted = true;
+                    con.DateDeleted = con.DateDeleted ?? DateTime.UtcNow;
+                    _context.Update(con);
+                    _context.SaveChanges();
+                    return false;
+                }
+                else
+                {
+                    con.NumberOfUses--;
+                    _context.Update(con);
+                    _context.SaveChanges();
+                    return true;
+                }
+                
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
     public class AuthTokenService : BasicServiceImplementation<AuthorizationToken>, IAuthTokenService
