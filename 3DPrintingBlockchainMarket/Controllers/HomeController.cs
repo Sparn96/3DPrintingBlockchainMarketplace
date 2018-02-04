@@ -20,8 +20,10 @@ namespace _3DPrintingBlockchainMarket.Controllers
         }
         public JsonResult Index()
         {
-            //_EmailSender.SendModelConfirmationAsync("mitchell@marshhome.net");
-            return Json(new { result = "yes"});
+            UploadModelJson model = new UploadModelJson()
+            {  description = "Container", model_license_id = "40C03B2D-370D-45B9-9BCC-015DB1FF90B6", name = "Bottle Container", pricing_unit_of_measure_id = "USD", tags = new List<string>() { "Bottle","Container","4 Pack","Pack","Beer","Holder" }, token_price = .10m  };
+
+            return Json(model);
         }
 
         public JsonResult About()

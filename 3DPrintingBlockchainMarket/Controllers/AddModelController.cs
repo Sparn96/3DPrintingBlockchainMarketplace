@@ -35,18 +35,23 @@ namespace _3DPrintingBlockchainMarket.Controllers
         /// </summary>
         /// <param name="files">Filename must be the unique returned ID of the addition confirmaiton</param>
         /// <returns></returns>
-        public async Task<JsonResult> UploadModelsAsync(List<IFormFile> files)
+        [HttpPost]
+        public async Task<JsonResult> UploadModelsAsync()
         {
-
+            var files = HttpContext.Request.Form.Files;
             long size = files.Sum(f => f.Length);
             // full path to file in temp location
-            var filePath = Path.GetTempFileName();
-
+            Dictionary<string,string> TempFiles = new Dictionary<string, string>();
+            
+            
             foreach (var formFile in files)
             {
+                var filePath = Path.GetTempFileName();
+                TempFiles.Add(filePath, formFile.FileName);
+
                 if (formFile.Length > 0)
                 {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    using (var stream = new FileStream(filePath, FileMode.OpenOrCreate))
                     {
                         await formFile.CopyToAsync(stream);
                     }
@@ -56,10 +61,11 @@ namespace _3DPrintingBlockchainMarket.Controllers
             List<string> FailedFiles = new List<string>();
             //List of all added objects
             List<string> AddedModelPics = new List<string>();
-            foreach (var file in Directory.GetFiles(filePath))
+            
+            foreach (var file in TempFiles.Keys)
             {
                 //Remove the filepath
-                string FileNameWithExt = file.Remove(0, file.LastIndexOf('/'));
+                string FileNameWithExt = TempFiles[file];
                 //remove the file extension 
                 string FileName = FileNameWithExt.Remove(FileNameWithExt.Length - 4);
                 using (var stream = new FileStream(file, FileMode.Open))
@@ -79,7 +85,7 @@ namespace _3DPrintingBlockchainMarket.Controllers
                         case FileUploadType.JPG:
                             {
                                 string pic = AddPictureRepresentation(stream, FileName);
-                                if(String.IsNullOrEmpty(pic)){ AddedModelPics.Add(pic); } else{ FailedFiles.Add(FileName); }
+                                if(!String.IsNullOrEmpty(pic)){ AddedModelPics.Add(pic); } else{ FailedFiles.Add(FileName); }
                                 break;
                             }
                         default:
@@ -138,7 +144,7 @@ namespace _3DPrintingBlockchainMarket.Controllers
         {
 
             //Add object to the database
-            ObjectModel obj = _ObjectModelService.Get(FileName);
+            ObjectModel obj = _ObjectModelService.Get(Guid.Parse(FileName));
             if (obj == null) return false;
             else
             { // The file is a valid object.. verify the proper user is uploading the file
@@ -198,7 +204,7 @@ namespace _3DPrintingBlockchainMarket.Controllers
             System.IO.File.WriteAllBytes(FilePath, inMem.ToArray());
             return FilePath;
         }
-        public JsonResult ConfirmValidModel(UploadModelJson model)
+        public JsonResult ConfirmValidModel([FromBody]UploadModelJson model)
         {
             if(String.IsNullOrEmpty(model.model_license_id)||
                 String.IsNullOrEmpty(model.name) ||
@@ -234,6 +240,7 @@ namespace _3DPrintingBlockchainMarket.Controllers
         public FileUploadType FindFileType(Stream fileStream, string FileNameWithExtension)
         {
             string ext = FileNameWithExtension.Remove(0, FileNameWithExtension.Length - 3).ToUpper();
+            //return FileUploadType.STL; // Temporary
             switch(ext)
             {
                 case "PNG":
