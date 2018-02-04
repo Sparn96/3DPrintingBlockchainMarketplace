@@ -8,6 +8,10 @@ namespace _3DPrintingBlockchainMarket.Models
 {
     public class ObjectModel : UserEditableDataRow
     {
+        public ObjectModel()
+        {
+            AuthorizationTokens = new HashSet<AuthorizationToken>();
+        }
         public Guid IdObjectModel { get; set; }
         public string Name { get; set; }
         public int DownloadCount { get; set; }
@@ -21,6 +25,8 @@ namespace _3DPrintingBlockchainMarket.Models
 
         public UnitOfMeasure PricingUnitOfMeaure { get; set; }
         public string PricingUnitOfMeaureId { get; set; }
+
+        public ICollection<AuthorizationToken> AuthorizationTokens { get; set; }
 
         //Owned by is whomever created the the item, unless it is tied with an enterprise license...
 

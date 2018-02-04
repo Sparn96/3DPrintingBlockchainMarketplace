@@ -11,6 +11,7 @@ namespace _3DPrintingBlockchainMarket.Models
         public ModelLicense()
         {
             ObjectModelsUnderThisLicense = new HashSet<ObjectModel>();
+            DistributedLicenses = new HashSet<ConsumableLicense>();
         }
         public Guid IdLicense { get; set; }
         public string Name { get; set; }
@@ -20,5 +21,6 @@ namespace _3DPrintingBlockchainMarket.Models
         //Associated Enterprise?
 
         public ICollection<ObjectModel> ObjectModelsUnderThisLicense { get; set; }
+        public ICollection<ConsumableLicense> DistributedLicenses { get; set; }
     }
 }

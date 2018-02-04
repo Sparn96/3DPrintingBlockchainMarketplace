@@ -20,7 +20,34 @@ namespace _3DPrintingBlockchainMarket.Services
     {
 
     }
+    public interface IAuthTokenService : IBasicService<AuthorizationToken>
+    {
 
+    }
+    public interface IConsumableLicense : IBasicService<ConsumableLicense>
+    {
+        bool ConsumeUse(Guid token_user);
+    }
+
+    public class ConsumableLicenseService : BasicServiceImplementation<ConsumableLicense>, IConsumableLicense
+    {
+        public ConsumableLicenseService(ApplicationDbContext ctx, UserManager<ApplicationUser> um) : base(ctx, um)
+        {
+
+        }
+
+        public bool ConsumeUse(Guid token_user)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class AuthTokenService : BasicServiceImplementation<AuthorizationToken>, IAuthTokenService
+    {
+        public AuthTokenService(ApplicationDbContext ctx, UserManager<ApplicationUser> um) : base(ctx, um)
+        {
+
+        }
+    }
     public class LicenseService : BasicServiceImplementation<ModelLicense> , ILicenseService
     {
         public LicenseService(ApplicationDbContext ctx, UserManager<ApplicationUser> um) : base(ctx, um)

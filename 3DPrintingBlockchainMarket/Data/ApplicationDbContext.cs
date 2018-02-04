@@ -19,6 +19,8 @@ namespace _3DPrintingBlockchainMarket.Data
         public virtual DbSet<Enterprise> Enterprise { get; set; }
         public virtual DbSet<UnitOfMeasure> UnitOfMeasure { get; set; }
         public virtual DbSet<ModelLicense> ModelLicense { get; set; }
+        public virtual DbSet<AuthorizationToken> AuthorizationToken { get; set; }
+        public virtual DbSet<ConsumableLicense> ConsumableLicense { get; set; }
 
 
 
@@ -100,6 +102,50 @@ namespace _3DPrintingBlockchainMarket.Data
                     .ValueGeneratedOnAdd();
 
 
+            });
+
+            builder.Entity<ConsumableLicense>(entity =>
+            {
+                entity.ToTable("Consumable_License");
+                entity.HasKey(e => e.IdConsumableLicense);
+                entity.Property(e => e.IdConsumableLicense)
+                    .ValueGeneratedOnAdd();
+
+                entity.HasOne(e => e.ModelLicense)
+                    .WithMany(e => e.DistributedLicenses)
+                    .HasForeignKey(e => e.ModelLicenseId);
+
+                entity.HasOne(e => e.CreatedBy)
+                    .WithMany(e => e.ConsumableLicensesCreatedBy)
+                    .HasForeignKey(e => e.CreatedById);
+
+                entity.HasOne(e => e.LastModifiedBy)
+                    .WithMany(e => e.ConsumableLicensesLastMod)
+                    .HasForeignKey(e => e.LastModifiedById);
+            });
+
+            builder.Entity<AuthorizationToken>(entity =>
+            {
+                entity.ToTable("Authorization_Token");
+                entity.HasKey(f => f.IdAuthToken);
+                entity.Property(e => e.IdAuthToken)
+                    .ValueGeneratedOnAdd();
+
+                entity.HasOne(e => e.ObjectModel)
+                    .WithMany(e => e.AuthorizationTokens)
+                    .HasForeignKey(e => e.ObjectModeId);
+
+                entity.HasOne(e => e.AuthUser)
+                    .WithMany(e => e.AuthorizationTokens)
+                    .HasForeignKey(e => e.AuthUserId);
+
+                entity.HasOne(e => e.CreatedBy)
+                    .WithMany(e => e.AuthorizationTokenCreatedBy)
+                    .HasForeignKey(e => e.CreatedById);
+
+                entity.HasOne(e => e.LastModifiedBy)
+                    .WithMany(e => e.AuthorizationTokenLastModifiedBy)
+                    .HasForeignKey(e => e.LastModifiedById);
             });
         }
     }

@@ -39,6 +39,8 @@ namespace _3DPrintingBlockchainMarket
             services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddScoped<ILicenseService, LicenseService>();
+            services.AddScoped<IConsumableLicense, ConsumableLicenseService>();
+            services.AddScoped<IAuthTokenService, AuthTokenService>();
             services.AddScoped<IObjectModelService, ObjectModelService>();
 
             services.AddMvc();
