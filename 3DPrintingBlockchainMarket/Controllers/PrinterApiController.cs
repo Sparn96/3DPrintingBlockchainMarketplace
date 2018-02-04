@@ -3,6 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Headers;
+
+
 
 namespace _3DPrintingBlockchainMarket.Controllers
 {
@@ -15,12 +19,45 @@ namespace _3DPrintingBlockchainMarket.Controllers
         [HttpGet]
         public JsonResult AuthenticatePrintToken(Guid consumable_license, string user_id)
         {
+            //Need code that checks consumable_license with the database of tokens to see if valid
+            //If valid, cross reference consumable_license to see if matched with correct user_id
+            //Currently code makes a random token that is assumed valid
+
+
+           try
+            {
+                Guid singleUseAuthToken = new Guid();
+
+                return Json(singleUseAuthToken);
+            }
+
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+
             throw new NotImplementedException();
-            //Generte a new token annd send it back for the printer to send once it is ready to print
+            //Generte a new token and send it back for the printer to send once it is ready to print
         }
         [HttpGet]
         public JsonResult AuthenticatedAndReadyToPrintRequest(Guid auth_token_id)
         {
+
+            
+            try
+            {
+                
+
+               
+            }
+
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+
             throw new NotImplementedException();
             //Accept the auth token and send the encrypted 3D object over to the printer.
             //await the addition of the block chain
